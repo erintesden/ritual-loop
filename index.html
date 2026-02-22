@@ -599,7 +599,15 @@ function importTasks(event) {
 
 // Date helpers
 function getToday() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
-function getWeekId() { const d = new Date(), j = new Date(d.getFullYear(),0,1); return `${d.getFullYear()}-W${Math.ceil((Math.floor((d-j)/864e5)+j.getDay()+1)/7)}`; }
+function getWeekId() {
+  // ISO week: weeks start on Monday, Sunday is the last day of the week
+  const d = new Date();
+  const day = d.getDay() || 7; // convert Sunday (0) to 7
+  d.setDate(d.getDate() + 4 - day); // set to nearest Thursday (ISO week date)
+  const yearStart = new Date(d.getFullYear(), 0, 1);
+  const weekNo = Math.ceil(((d - yearStart) / 864e5 + 1) / 7);
+  return `${d.getFullYear()}-W${weekNo}`;
+}
 function getMonthId() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; }
 function getYearId() { return `${new Date().getFullYear()}`; }
 function getDayOfWeek() { return new Date().getDay(); }
@@ -639,7 +647,14 @@ function checkResets() {
 // Active checks
 function isDailyActiveToday(t) { if (!t.dailyDays || !t.dailyDays.length) return true; return t.dailyDays.includes(getDayOfWeek()); }
 function isWeeklyActiveToday(t) { if (!t.weeklyRange || !t.weeklyRange.length) return true; return t.weeklyRange.includes(getDayOfWeek()); }
-function isMonthlyActiveToday(t) { const d = getDayOfMonth(); return d >= (t.monthFrom||1) && d <= (t.monthTo||31); }
+function isMonthlyActiveToday(t) {
+  const d = getDayOfMonth();
+  const now = new Date();
+  const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  const from = Math.min(t.monthFrom || 1, lastDay);
+  const to = Math.min(t.monthTo || 31, lastDay);
+  return d >= from && d <= to;
+}
 function isYearlyActiveToday(t) { return getCurrentMonth() === (t.yearlyMonth ?? 0) && getDayOfMonth() === (t.yearlyDay ?? 1); }
 
 function isTaskActiveToday(t) {
