@@ -275,6 +275,13 @@
     border-radius: 8px; border: 1px solid var(--border-light);
   }
 
+  .section-active {
+    font-size: 0.58rem; font-weight: 500; color: var(--text-dim);
+    letter-spacing: 0.04em;
+  }
+
+  .section-active .active-num { font-weight: 600; }
+
   .section-chevron {
     font-size: 0.7rem; color: var(--text-dim);
     transition: transform 0.25s ease, color var(--transition);
@@ -422,6 +429,7 @@
     .reset-info { font-size: 0.72rem; padding: 6px 12px; }
     .section-title { font-size: 0.75rem; }
     .section-count { font-size: 0.68rem; }
+    .section-active { font-size: 0.64rem; }
     .schedule-label { font-size: 0.75rem; }
     .schedule-note { font-size: 0.75rem; }
     .month-range label, .yearly-date label { font-size: 0.82rem; }
@@ -880,11 +888,14 @@ function render() {
     if (!group.length) return;
     const isColl = !!collapsedSections[freq];
     const doneN = group.filter(t=>t.done).length;
+    const remaining = group.filter(t=>!t.done);
+    const activeN = remaining.filter(t=>isTaskActiveToday(t)).length;
     const label = freq==='anytime'?'Anytime':freq[0].toUpperCase()+freq.slice(1);
+    const activeHtml = remaining.length ? ` <span class="section-active">(<span class="active-num">${activeN}</span> active)</span>` : '';
 
     html += `<div class="section-header" onclick="toggleSection('${freq}')">
       <span class="section-title ${freq}">${label}</span>
-      <span class="section-count">${doneN}/${group.length}</span>
+      <span class="section-count">${doneN}/${group.length}</span>${activeHtml}
       <span class="section-line"></span>
       <span class="section-chevron ${isColl?'collapsed':''}" id="chevron-${freq}">&#9662;</span>
     </div>`;
@@ -938,6 +949,6 @@ setInterval(updateResetInfo, 60000);
 setFreq('daily');
 </script>
 
-<script defer src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body>
 </html>
