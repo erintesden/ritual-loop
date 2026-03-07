@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ritual-loop-4';
+const CACHE_NAME = 'ritual-loop-5';
 const ASSETS = [
   './',
   './index.html',

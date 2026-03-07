@@ -218,6 +218,7 @@
   .day-chip:hover { border-color: var(--text-muted); color: var(--text-muted); }
   .day-chip.selected-daily { background: var(--accent-daily-bg); border-color: var(--accent-daily); color: var(--accent-daily); }
   .day-chip.selected-weekly { background: var(--accent-weekly-bg); border-color: var(--accent-weekly); color: var(--accent-weekly); }
+  .day-chip.selected-monthly { background: var(--accent-monthly-bg); border-color: var(--accent-monthly); color: var(--accent-monthly); }
   .day-chip.in-range { background: rgba(106,127,184,0.04); border-color: rgba(106,127,184,0.3); color: var(--accent-weekly); }
 
   .schedule-note {
@@ -505,7 +506,10 @@
     </div>
 
     <div class="schedule-options" id="monthlyOptions">
-      <div class="schedule-label">Complete during these days of the month</div>
+      <div class="schedule-label">Active months (leave empty for every month)</div>
+      <div class="day-picker" id="monthlyMonthPicker"></div>
+      <div class="schedule-note" id="monthlyMonthNote">No months selected — repeats every month.</div>
+      <div class="schedule-label" style="margin-top:12px">Complete during these days of the month</div>
       <div class="month-range">
         <label>From day</label>
         <input type="number" id="monthFrom" min="1" max="31" value="1" />
@@ -545,6 +549,7 @@ let selectedFreq = 'daily';
 let dailySelectedDays = [];
 let weeklyRangeStart = null;
 let weeklyRangeEnd = null;
+let monthlySelectedMonths = [];
 
 // Collapsed state
 const COLLAPSE_KEY = 'ritual_loop_collapsed';
@@ -656,8 +661,10 @@ function checkResets() {
 function isDailyActiveToday(t) { if (!t.dailyDays || !t.dailyDays.length) return true; return t.dailyDays.includes(getDayOfWeek()); }
 function isWeeklyActiveToday(t) { if (!t.weeklyRange || !t.weeklyRange.length) return true; return t.weeklyRange.includes(getDayOfWeek()); }
 function isMonthlyActiveToday(t) {
-  const d = getDayOfMonth();
   const now = new Date();
+  // Check month filter first
+  if (t.monthlyMonths && t.monthlyMonths.length && !t.monthlyMonths.includes(now.getMonth())) return false;
+  const d = getDayOfMonth();
   const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
   const from = Math.min(t.monthFrom || 1, lastDay);
   const to = Math.min(t.monthTo || 31, lastDay);
@@ -711,6 +718,26 @@ function buildWeeklyPicker() {
 }
 function buildYearlyMonthSelect() {
   document.getElementById('yearlyMonth').innerHTML = MONTH_NAMES.map((m,i) => `<option value="${i}">${m}</option>`).join('');
+}
+
+function buildMonthlyPicker() {
+  document.getElementById('monthlyMonthPicker').innerHTML = MONTH_SHORT.map((m,i) =>
+    `<div class="day-chip" data-month="${i}" onclick="toggleMonthlyMonth(this)">${m}</div>`
+  ).join('');
+}
+function toggleMonthlyMonth(el) {
+  const m = parseInt(el.dataset.month);
+  el.classList.toggle('selected-monthly');
+  if (el.classList.contains('selected-monthly')) { if (!monthlySelectedMonths.includes(m)) monthlySelectedMonths.push(m); }
+  else { monthlySelectedMonths = monthlySelectedMonths.filter(x => x !== m); }
+  const note = document.getElementById('monthlyMonthNote');
+  if (!monthlySelectedMonths.length) note.textContent = 'No months selected \u2014 repeats every month.';
+  else { const s = [...monthlySelectedMonths].sort((a,b)=>a-b); note.textContent = 'Active in: '+s.map(i=>MONTH_SHORT[i]).join(', '); }
+}
+function resetMonthlyPicker() {
+  monthlySelectedMonths = [];
+  document.querySelectorAll('#monthlyMonthPicker .day-chip').forEach(c => c.classList.remove('selected-monthly'));
+  document.getElementById('monthlyMonthNote').textContent = 'No months selected \u2014 repeats every month.';
 }
 
 function toggleDailyDay(el) {
@@ -780,6 +807,7 @@ function addTask() {
     task.monthFrom = Math.max(1,Math.min(31,parseInt(document.getElementById('monthFrom').value)||1));
     task.monthTo = Math.max(1,Math.min(31,parseInt(document.getElementById('monthTo').value)||31));
     if (task.monthTo < task.monthFrom) task.monthTo = task.monthFrom;
+    task.monthlyMonths = [...monthlySelectedMonths];
   }
   if (selectedFreq === 'yearly') {
     task.yearlyMonth = parseInt(document.getElementById('yearlyMonth').value);
@@ -788,7 +816,7 @@ function addTask() {
 
   tasks.push(task);
   input.value = '';
-  resetDailyPicker(); resetWeeklyPicker();
+  resetDailyPicker(); resetWeeklyPicker(); resetMonthlyPicker();
   save(); render();
   closeAddPanel();
 }
@@ -863,9 +891,15 @@ function getHint(t) {
   }
   if (t.freq==='monthly') {
     const f=t.monthFrom||1,to=t.monthTo||31;
-    if (f===1&&to===31) return 'any day';
-    if (f===to) return `day ${f}`;
-    return `days ${f}\u2013${to}`;
+    let dayPart;
+    if (f===1&&to===31) dayPart='any day';
+    else if (f===to) dayPart=`day ${f}`;
+    else dayPart=`days ${f}\u2013${to}`;
+    if (t.monthlyMonths && t.monthlyMonths.length) {
+      const ms = [...t.monthlyMonths].sort((a,b)=>a-b).map(i=>MONTH_SHORT[i]).join(', ');
+      return `${ms} \u00b7 ${dayPart}`;
+    }
+    return dayPart;
   }
   if (t.freq==='yearly') return `${MONTH_SHORT[t.yearlyMonth??0]} ${t.yearlyDay??1}`;
   return '';
@@ -943,7 +977,7 @@ if ('serviceWorker' in navigator) {
 }
 
 // Init
-buildDailyPicker(); buildWeeklyPicker(); buildYearlyMonthSelect();
+buildDailyPicker(); buildWeeklyPicker(); buildMonthlyPicker(); buildYearlyMonthSelect();
 loadCollapsed(); load(); checkResets(); render(); updateResetInfo();
 setInterval(updateResetInfo, 60000);
 setFreq('daily');
