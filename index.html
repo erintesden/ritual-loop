@@ -402,7 +402,8 @@
   }
 
   .io-btn:hover { border-color: var(--border); color: var(--text); box-shadow: var(--shadow-sm); }
-  .io-btn .io-icon { font-size: 0.78rem; display: inline-block; border-bottom: 1.5px solid currentColor; padding-bottom: 1px; line-height: 1; }
+  .io-btn .io-icon { display: inline-block; width: 0.85em; height: 0.85em; vertical-align: -0.1em; }
+  .io-btn .io-icon svg { width: 100%; height: 100%; }
 
   .io-msg {
     font-size: 0.66rem; color: var(--check); font-weight: 500;
@@ -455,8 +456,8 @@
   </header>
 
   <div class="io-bar">
-    <button class="io-btn" onclick="exportTasks()"><span class="io-icon">&#8593;</span> Export</button>
-    <button class="io-btn" onclick="document.getElementById('importFile').click()"><span class="io-icon">&#8595;</span> Import</button>
+    <button class="io-btn" onclick="exportTasks()"><span class="io-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="17" x2="12" y2="3"/><polyline points="6 9 12 3 18 9"/><line x1="4" y1="21" x2="20" y2="21"/></svg></span> Export</button>
+    <button class="io-btn" onclick="document.getElementById('importFile').click()"><span class="io-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="3" x2="12" y2="17"/><polyline points="6 11 12 17 18 11"/><line x1="4" y1="21" x2="20" y2="21"/></svg></span> Import</button>
     <input type="file" id="importFile" class="io-file" accept=".json" onchange="importTasks(event)" />
     <span class="io-msg" id="ioMsg"></span>
   </div>
