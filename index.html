@@ -402,7 +402,7 @@
   }
 
   .io-btn:hover { border-color: var(--border); color: var(--text); box-shadow: var(--shadow-sm); }
-  .io-btn .io-icon { font-size: 0.78rem; }
+  .io-btn .io-icon { font-size: 0.78rem; display: inline-block; border-bottom: 1.5px solid currentColor; padding-bottom: 1px; line-height: 1; }
 
   .io-msg {
     font-size: 0.66rem; color: var(--check); font-weight: 500;
@@ -455,8 +455,8 @@
   </header>
 
   <div class="io-bar">
-    <button class="io-btn" onclick="exportTasks()"><span class="io-icon">&#8679;</span> Export</button>
-    <button class="io-btn" onclick="document.getElementById('importFile').click()"><span class="io-icon">&#8681;</span> Import</button>
+    <button class="io-btn" onclick="exportTasks()"><span class="io-icon">&#8593;</span> Export</button>
+    <button class="io-btn" onclick="document.getElementById('importFile').click()"><span class="io-icon">&#8595;</span> Import</button>
     <input type="file" id="importFile" class="io-file" accept=".json" onchange="importTasks(event)" />
     <span class="io-msg" id="ioMsg"></span>
   </div>
